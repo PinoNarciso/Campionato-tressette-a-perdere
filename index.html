@@ -3,26 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tressette Cloud - Pino Narciso</title>
+<title>Tressette Cloud</title>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 
-:root{
---primary:#2c3e50;
---danger:#e74c3c;
---warning:#f39c12;
---success:#27ae60;
---accent:#3498db;
---info:#34b7f1;
-}
-
 body{
-font-family:'Segoe UI',sans-serif;
-background:#f0f2f5;
-margin:0;
+font-family:Arial;
+background:#f2f2f2;
 padding:10px;
 display:flex;
 flex-direction:column;
@@ -32,90 +23,67 @@ align-items:center;
 .card{
 background:white;
 padding:15px;
-border-radius:12px;
-box-shadow:0 4px 10px rgba(0,0,0,0.1);
+border-radius:10px;
 width:100%;
 max-width:500px;
 margin-bottom:15px;
 }
 
 button{
-width:100%;
-padding:12px;
+padding:10px;
 border:none;
-border-radius:8px;
-font-weight:bold;
+border-radius:6px;
 cursor:pointer;
-margin-bottom:8px;
 color:white;
+margin-bottom:5px;
 }
 
 .btn-main{background:#27ae60;}
 .btn-join{background:#3498db;}
-.btn-rete{background:#34b7f1;width:auto;padding:4px 8px;font-size:0.7rem;}
-.btn-cappotto{background:#e67e22;}
+.btn-rete{background:#2980b9;width:auto;padding:4px 6px;font-size:12px;}
+.btn-cappotto{background:#e67e22;width:auto;padding:4px 6px;font-size:12px;}
 
 input{
 width:100%;
-padding:10px;
-border-radius:6px;
-border:1px solid #ddd;
-margin-bottom:10px;
-}
-
-.table-code{
-background:#eee;
-padding:10px;
-border-radius:6px;
-text-align:center;
-font-family:monospace;
-font-size:1.2rem;
-font-weight:bold;
-margin-bottom:10px;
+padding:8px;
+margin-bottom:8px;
 }
 
 table{
 width:100%;
 border-collapse:collapse;
-margin-top:10px;
 }
 
 th,td{
-padding:8px;
-text-align:center;
+padding:6px;
 border-bottom:1px solid #eee;
+text-align:center;
 }
 
 .badge{
-background:#f1f3f5;
-padding:2px 6px;
+background:#eee;
+padding:2px 5px;
 border-radius:4px;
-font-size:0.75rem;
+font-size:11px;
 }
 
 .history-scroll-cell{
 display:flex;
-gap:5px;
+gap:3px;
 overflow-x:auto;
-}
-
-.hidden{display:none;}
-
-.eliminated{
-background:#fdf2f2;
-color:#aaa;
-text-decoration:line-through;
 }
 
 .warning{
 background:#fff3cd;
-font-weight:bold;
 }
 
-.crown{
-color:gold;
-font-size:18px;
-margin-left:4px;
+.eliminated{
+text-decoration:line-through;
+color:#aaa;
+}
+
+.hidden{
+display:none;
 }
 
 </style>
@@ -128,23 +96,14 @@ margin-left:4px;
 <h2>Tressette Cloud</h2>
 
 <button class="btn-main" onclick="showCreate()">Crea Tavolo</button>
-<button class="btn-join" onclick="showJoin()">Entra in Tavolo</button>
+<button class="btn-join" onclick="showJoin()">Entra Tavolo</button>
 
 <div id="create-area" class="hidden">
 
-<hr>
-
-<label>Nome Tavolo</label>
-<input id="tableName" value="Tavolo 1">
-
-<label>Limite punti</label>
+<input id="tableName" placeholder="Nome Tavolo" value="Tavolo 1">
 <input id="limit" type="number" value="81">
-
-<label>Giocatori</label>
-<input id="names" placeholder="Mario, Luca, Anna">
-
-<label>Password Capotavola</label>
-<input type="password" id="adminPass">
+<input id="names" placeholder="Mario,Luca,Anna">
+<input id="adminPass" type="password" placeholder="Password Capotavola">
 
 <button class="btn-main" onclick="createNewTable()">Avvia Tavolo</button>
 
@@ -152,13 +111,8 @@ margin-left:4px;
 
 <div id="join-area" class="hidden">
 
-<hr>
-
-<label>Codice Tavolo</label>
-<input id="joinCode">
-
-<label>Password Capotavola</label>
-<input type="password" id="joinPass">
+<input id="joinCode" placeholder="Codice Tavolo">
+<input id="joinPass" type="password" placeholder="Password Capotavola">
 
 <button class="btn-join" onclick="joinTable()">Entra</button>
 
@@ -168,22 +122,17 @@ margin-left:4px;
 
 <div class="card hidden" id="game">
 
-<div id="tableCodeDisplay" class="table-code"></div>
-
-<h2 id="displayTableName"></h2>
+<h3 id="displayTableName"></h3>
+<div id="tableCodeDisplay"></div>
 
 <div id="admin-controls" class="hidden">
 
 <div id="inputs-area"></div>
 
-<div id="sum-display">Somma: 0 / 21</div>
+<div id="sum-display">Somma:0/21</div>
 
 <button id="confirm-btn" class="btn-main" onclick="addRound()" disabled>
 Conferma Mano
-</button>
-
-<button class="btn-cappotto" onclick="cappotto()">
-🏆 Cappotto (21 a tutti)
 </button>
 
 </div>
@@ -203,17 +152,13 @@ Conferma Mano
 
 </table>
 
-<div id="admin-footer" class="hidden">
+<canvas id="scoreChart"></canvas>
 
-<button style="background:#95a5a6" onclick="undoLast()">
-Annulla Ultima Mano
-</button>
+<h3>🏆 Classifica Torneo</h3>
+<ul id="tournament-list"></ul>
 
-</div>
-
-<button style="background:#eee;color:#333" onclick="location.reload()">
-Torna al Menu
-</button>
+<button onclick="newGame()" style="background:#16a085">Nuova Partita</button>
+<button onclick="deleteTable()" style="background:#c0392b">Cancella Tavolo</button>
 
 </div>
 
@@ -232,25 +177,19 @@ const db=firebase.database();
 let currentTableID=null;
 let isAdmin=false;
 let gameData={players:[],limit:81};
+let chart=null;
 
 function showCreate(){
 document.getElementById("create-area").classList.toggle("hidden");
-document.getElementById("join-area").classList.add("hidden");
 }
 
 function showJoin(){
 document.getElementById("join-area").classList.toggle("hidden");
-document.getElementById("create-area").classList.add("hidden");
 }
 
 function createNewTable(){
 
 const names=document.getElementById("names").value.split(",").map(n=>n.trim()).filter(n=>n);
-
-if(names.length<2){
-alert("Inserisci almeno 2 giocatori");
-return;
-}
 
 isAdmin=true;
 
@@ -277,20 +216,14 @@ startListening();
 function joinTable(){
 
 currentTableID=document.getElementById("joinCode").value.toUpperCase();
+
 const pass=document.getElementById("joinPass").value;
 
-db.ref("tables/"+currentTableID).once("value").then(snapshot=>{
+db.ref("tables/"+currentTableID).once("value").then(snap=>{
 
-const data=snapshot.val();
+gameData=snap.val();
 
-if(!data){
-alert("Tavolo non trovato");
-return;
-}
-
-gameData=data;
-
-isAdmin=pass===data.adminPassword;
+isAdmin=pass===gameData.adminPassword;
 
 startListening();
 
@@ -300,19 +233,18 @@ startListening();
 
 function startListening(){
 
-db.ref("tables/"+currentTableID).on("value",(snapshot)=>{
+db.ref("tables/"+currentTableID).on("value",snap=>{
 
-gameData=snapshot.val();
+gameData=snap.val();
 
 document.getElementById("setup").classList.add("hidden");
 document.getElementById("game").classList.remove("hidden");
 
-document.getElementById("tableCodeDisplay").innerText="CODICE: "+currentTableID;
 document.getElementById("displayTableName").innerText=gameData.tableName;
+document.getElementById("tableCodeDisplay").innerText=currentTableID;
 
 if(isAdmin){
 document.getElementById("admin-controls").classList.remove("hidden");
-document.getElementById("admin-footer").classList.remove("hidden");
 }
 
 render();
@@ -330,50 +262,56 @@ const sorted=[...gameData.players].sort((a,b)=>a.score-b.score);
 
 sorted.forEach((p,i)=>{
 
-const history=(p.playerHistory||[]).map(v=>`<span class="badge">${v}</span>`).join("");
+let row="";
 
-let rowClass="";
+if(!p.active) row="eliminated";
+else if(p.score>=gameData.limit*0.8) row="warning";
 
-if(!p.active) rowClass="eliminated";
-else if(p.score>=gameData.limit*0.8) rowClass="warning";
+const history=p.playerHistory.map(v=>`<span class="badge">${v}</span>`).join("");
 
 rank.innerHTML+=`
-
-<tr class="${rowClass}">
+<tr class="${row}">
 <td>${i+1}</td>
-<td>${p.name}${isAdmin && i===0 ? '<span class="crown">👑</span>' : ''}</td>
-<td><b>${p.score}</b></td>
+<td>${p.name}</td>
+<td>${p.score}</td>
 <td><div class="history-scroll-cell">${history}</div></td>
 </tr>
-
 `;
 
 });
 
 if(isAdmin){
 
-const inputDiv=document.getElementById("inputs-area");
-inputDiv.innerHTML="";
+const area=document.getElementById("inputs-area");
+area.innerHTML="";
 
 gameData.players.filter(p=>p.active).forEach(p=>{
 
-inputDiv.innerHTML+=`
+area.innerHTML+=`
 
-<div style="display:flex;justify-content:space-between;margin-bottom:10px;">
-<span><b>${p.name}</b></span>
-<div style="display:flex;gap:5px;">
-<input type="number" class="score-in" data-id="${p.id}" style="width:60px" oninput="checkSum()">
-<button class="btn-rete" onclick="fillRete(${p.id})">RETE</button>
+<div style="display:flex;justify-content:space-between">
+
+<span>${p.name}</span>
+
+<div style="display:flex;gap:3px">
+
+<input type="number" class="score-in" data-id="${p.id}" style="width:50px" oninput="checkSum()">
+
+<button class="btn-rete" onclick="fillRete(${p.id})">R</button>
+
+<button class="btn-cappotto" onclick="cappotto(${p.id})">🏆</button>
+
 </div>
+
 </div>
 
 `;
 
 });
 
-checkSum();
-
 }
+
+updateChart();
 
 }
 
@@ -386,25 +324,49 @@ sum+=parseInt(i.value||0);
 });
 
 document.getElementById("confirm-btn").disabled=sum!==21;
-
-document.getElementById("sum-display").innerText="Somma: "+sum+" / 21";
+document.getElementById("sum-display").innerText="Somma:"+sum+"/21";
 
 }
 
 function fillRete(id){
 
-let currentTotal=0;
+let total=0;
 
-document.querySelectorAll(".score-in").forEach(inp=>{
-if(parseInt(inp.dataset.id)!==id)
-currentTotal+=parseInt(inp.value||0);
+document.querySelectorAll(".score-in").forEach(i=>{
+if(i.dataset.id!=id) total+=parseInt(i.value||0);
 });
 
-const target=document.querySelector(`.score-in[data-id="${id}"]`);
-
-target.value=Math.max(0,21-currentTotal);
+document.querySelector(`.score-in[data-id="${id}"]`).value=21-total;
 
 checkSum();
+
+}
+
+function cappotto(id){
+
+gameData.players.forEach(p=>{
+
+if(p.active){
+
+if(p.id!=id){
+
+p.score+=21;
+p.playerHistory.push(21);
+
+}else{
+
+p.playerHistory.push(0);
+
+}
+
+if(p.score>=gameData.limit)
+p.active=false;
+
+}
+
+});
+
+db.ref("tables/"+currentTableID).update(gameData);
 
 }
 
@@ -416,7 +378,7 @@ const inp=document.querySelector(`.score-in[data-id="${p.id}"]`);
 
 if(inp){
 
-const val=parseInt(inp.value||0);
+let val=parseInt(inp.value||0);
 
 p.score+=val;
 p.playerHistory.push(val);
@@ -428,47 +390,81 @@ p.active=false;
 
 });
 
+if(gameData.players.filter(p=>p.active).length<=1){
+
+saveTournamentResult();
+
+}
+
 db.ref("tables/"+currentTableID).update(gameData);
 
 }
 
-function cappotto(){
+function saveTournamentResult(){
 
-if(!confirm("Applicare cappotto? 21 punti a tutti.")) return;
+const winner=[...gameData.players].sort((a,b)=>a.score-b.score)[0];
 
-gameData.players.forEach(p=>{
-
-if(p.active){
-
-p.score+=21;
-p.playerHistory.push(21);
-
-if(p.score>=gameData.limit)
-p.active=false;
+db.ref("tournamentResults").push({
+winner:winner.name,
+table:gameData.tableName,
+date:new Date().toLocaleString()
+});
 
 }
 
+function loadTournament(){
+
+db.ref("tournamentResults").limitToLast(10).on("value",snap=>{
+
+const list=document.getElementById("tournament-list");
+list.innerHTML="";
+
+snap.forEach(c=>{
+const d=c.val();
+list.innerHTML+=`<li>${d.winner} - ${d.table}</li>`;
+});
+
+});
+
+}
+
+loadTournament();
+
+function newGame(){
+
+gameData.players.forEach(p=>{
+p.score=0;
+p.active=true;
+p.playerHistory=[];
 });
 
 db.ref("tables/"+currentTableID).update(gameData);
 
 }
 
-function undoLast(){
+function deleteTable(){
 
-gameData.players.forEach(p=>{
-
-if(p.playerHistory.length){
-
-const val=p.playerHistory.pop();
-p.score-=val;
-p.active=p.score<gameData.limit;
+db.ref("tables/"+currentTableID).remove();
+location.reload();
 
 }
 
-});
+function updateChart(){
 
-db.ref("tables/"+currentTableID).update(gameData);
+const ctx=document.getElementById("scoreChart");
+
+if(chart) chart.destroy();
+
+chart=new Chart(ctx,{
+type:'bar',
+data:{
+labels:gameData.players.map(p=>p.name),
+datasets:[{
+label:"Punti",
+data:gameData.players.map(p=>p.score)
+}]
+}
+});
 
 }
 
