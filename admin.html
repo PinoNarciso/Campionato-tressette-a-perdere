@@ -2,51 +2,18 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<title>Admin Campionato</title>
-
-<style>
-
-body{
-font-family:Segoe UI;
-background:#f0f2f5;
-padding:20px;
-}
-
-.card{
-background:white;
-padding:20px;
-border-radius:10px;
-box-shadow:0 4px 10px rgba(0,0,0,0.1);
-max-width:600px;
-margin:auto;
-}
-
-input{
-width:100%;
-padding:8px;
-margin-bottom:10px;
-}
-
-button{
-padding:8px 12px;
-border:none;
-background:#27ae60;
-color:white;
-border-radius:6px;
-cursor:pointer;
-}
-
-</style>
+<title>Admin Tavoli</title>
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
 <div class="card">
 
-<h2>Amministrazione Tavoli</h2>
+<h2>Creazione tavolo</h2>
 
 <label>Nome tavolo</label>
-<input id="name">
+<input id="table">
 
 <label>Giocatori (separati da virgola)</label>
 <input id="players">
@@ -54,9 +21,9 @@ cursor:pointer;
 <label>Password tavolo</label>
 <input id="pass">
 
-<button onclick="createTable()">Crea Tavolo</button>
+<button onclick="create()">Crea tavolo</button>
 
-<h3>Tavoli esistenti</h3>
+<h3>Tavoli</h3>
 
 <ul id="tables"></ul>
 
@@ -64,25 +31,30 @@ cursor:pointer;
 
 <script>
 
-function createTable(){
+function create(){
 
-let name=document.getElementById("name").value
+let name=document.getElementById("table").value
 let players=document.getElementById("players").value.split(",")
 let pass=document.getElementById("pass").value
 
 let table={
 name:name,
 pass:pass,
-players:players.map(p=>({name:p.trim(),score:0}))
+dealer:0,
+players:players.map(p=>({
+name:p.trim(),
+score:0,
+history:[]
+}))
 }
 
-localStorage.setItem("table_"+name,JSON.stringify(table))
+localStorage.setItem("tavolo_"+name,JSON.stringify(table))
 
-loadTables()
+load()
 
 }
 
-function loadTables(){
+function load(){
 
 let ul=document.getElementById("tables")
 ul.innerHTML=""
@@ -91,14 +63,14 @@ for(let i=0;i<localStorage.length;i++){
 
 let key=localStorage.key(i)
 
-if(key.startsWith("table_")){
+if(key.startsWith("tavolo_")){
 
-let table=JSON.parse(localStorage.getItem(key))
+let data=JSON.parse(localStorage.getItem(key))
 
 ul.innerHTML+=`
 <li>
-${table.name}
-<button onclick="openTable('${table.name}')">Apri</button>
+${data.name}
+<button onclick="openTable('${data.name}')">Apri</button>
 </li>
 `
 
@@ -110,11 +82,11 @@ ${table.name}
 
 function openTable(name){
 
-window.location="tavolo.html?name="+name
+location="tavolo.html?name="+name
 
 }
 
-loadTables()
+load()
 
 </script>
 

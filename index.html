@@ -3,55 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <title>Campionato Tressette</title>
-
-<style>
-
-body{
-font-family:Segoe UI;
-background:#f0f2f5;
-padding:20px;
-}
-
-.card{
-background:white;
-padding:20px;
-border-radius:10px;
-box-shadow:0 4px 10px rgba(0,0,0,0.1);
-max-width:700px;
-margin:auto;
-}
-
-table{
-width:100%;
-border-collapse:collapse;
-margin-top:15px;
-}
-
-th,td{
-padding:8px;
-border-bottom:1px solid #ddd;
-text-align:left;
-}
-
-button{
-padding:8px 12px;
-border:none;
-background:#3498db;
-color:white;
-border-radius:6px;
-cursor:pointer;
-}
-
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
 <div class="card">
 
-<h2>🏆 Campionato Tressette</h2>
+<h1>🏆 Campionato Tressette</h1>
 
-<button onclick="openAdmin()">Area Amministratore</button>
+<button onclick="admin()">Area amministratore</button>
 
 <table>
 
@@ -63,7 +24,7 @@ cursor:pointer;
 </tr>
 </thead>
 
-<tbody id="classifica"></tbody>
+<tbody id="ranking"></tbody>
 
 </table>
 
@@ -71,18 +32,18 @@ cursor:pointer;
 
 <script>
 
-function load(){
+function loadRanking(){
 
-const table=document.getElementById("classifica")
+let table=document.getElementById("ranking")
 table.innerHTML=""
 
 for(let i=0;i<localStorage.length;i++){
 
-const key=localStorage.key(i)
+let key=localStorage.key(i)
 
-if(key.startsWith("table_")){
+if(key.startsWith("tavolo_")){
 
-const data=JSON.parse(localStorage.getItem(key))
+let data=JSON.parse(localStorage.getItem(key))
 
 data.players.forEach(p=>{
 
@@ -102,19 +63,19 @@ table.innerHTML+=`
 
 }
 
-function openAdmin(){
+function admin(){
 
 let pass=prompt("Password amministratore")
 
-if(pass==="admin123"){
-window.location="admin.html"
+if(pass==="tressette"){
+location="admin.html"
 }else{
 alert("Password errata")
 }
 
 }
 
-load()
+loadRanking()
 
 </script>
 
