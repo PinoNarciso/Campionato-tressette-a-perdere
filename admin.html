@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Admin Campionato</title>
+
+<style>
+
+body{
+font-family:Segoe UI;
+background:#f0f2f5;
+padding:20px;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
+max-width:600px;
+margin:auto;
+}
+
+input{
+width:100%;
+padding:8px;
+margin-bottom:10px;
+}
+
+button{
+padding:8px 12px;
+border:none;
+background:#27ae60;
+color:white;
+border-radius:6px;
+cursor:pointer;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<h2>Amministrazione Tavoli</h2>
+
+<label>Nome tavolo</label>
+<input id="name">
+
+<label>Giocatori (separati da virgola)</label>
+<input id="players">
+
+<label>Password tavolo</label>
+<input id="pass">
+
+<button onclick="createTable()">Crea Tavolo</button>
+
+<h3>Tavoli esistenti</h3>
+
+<ul id="tables"></ul>
+
+</div>
+
+<script>
+
+function createTable(){
+
+let name=document.getElementById("name").value
+let players=document.getElementById("players").value.split(",")
+let pass=document.getElementById("pass").value
+
+let table={
+name:name,
+pass:pass,
+players:players.map(p=>({name:p.trim(),score:0}))
+}
+
+localStorage.setItem("table_"+name,JSON.stringify(table))
+
+loadTables()
+
+}
+
+function loadTables(){
+
+let ul=document.getElementById("tables")
+ul.innerHTML=""
+
+for(let i=0;i<localStorage.length;i++){
+
+let key=localStorage.key(i)
+
+if(key.startsWith("table_")){
+
+let table=JSON.parse(localStorage.getItem(key))
+
+ul.innerHTML+=`
+<li>
+${table.name}
+<button onclick="openTable('${table.name}')">Apri</button>
+</li>
+`
+
+}
+
+}
+
+}
+
+function openTable(name){
+
+window.location="tavolo.html?name="+name
+
+}
+
+loadTables()
+
+</script>
+
+</body>
+</html>
